@@ -64,8 +64,8 @@ jobs:
       - name: Build and push backend Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./back # Build context (root directory, adjust if Dockerfile is elsewhere)
-          file: ./back/Dockerfile # Path to Dockerfile
+          context: ./backend # Build context (root directory, adjust if Dockerfile is elsewhere)
+          file: ./backend/Dockerfile # Path to Dockerfile
           push: ${{ github.event_name != 'pull_request' }} # Only push on push events, not PRs
           tags: |
             ghcr.io/bsv-blockchain-demos/data-integrity-backend:${{ github.sha }}
