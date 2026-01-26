@@ -69,4 +69,4 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }} # Only push on push events, not PRs
           tags: |
             ghcr.io/bsv-blockchain-demos/data-integrity-backend:${{ github.sha }}
-            ghcr.io/bsv-blockchain-demos/data-intregity-backend:${{ needs.get_tag.outputs.deployment_tag }}
+            ghcr.io/bsv-blockchain-demos/data-integrity-backend:${{ needs.get_tag.outputs.deployment_tag }}
