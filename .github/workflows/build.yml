@@ -67,6 +67,8 @@ jobs:
           context: ./backend # Build context (root directory, adjust if Dockerfile is elsewhere)
           file: ./backend/Dockerfile # Path to Dockerfile
           push: ${{ github.event_name != 'pull_request' }} # Only push on push events, not PRs
+          build-args: |
+            VITE_API_URL=https://data-integrity-api.bsvb.tech/api
           tags: |
             ghcr.io/bsv-blockchain-demos/data-integrity-backend:${{ github.sha }}
             ghcr.io/bsv-blockchain-demos/data-integrity-backend:${{ needs.get_tag.outputs.deployment_tag }}

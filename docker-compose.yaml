@@ -19,7 +19,7 @@ services:
     ports:
       - "3001:3001"
     volumes:
-      - ./src/data:/app/data:ro
+      - ./backend/src/data:/app/data:ro
     environment:
       - DATA_DIR=/app/data
     networks:
