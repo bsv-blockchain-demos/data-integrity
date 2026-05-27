@@ -10,8 +10,8 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Path to data files - use DATA_DIR env var in Docker, fallback for local dev
-const dataDir = process.env.DATA_DIR || path.join(__dirname, '../../src/data');
+// DATA_DIR env var is used in Docker; the fallback resolves from src/ (ts-node) or dist/ (compiled) to src/data
+const dataDir = process.env.DATA_DIR || path.resolve(__dirname, '../src/data');
 const originalDataPath = path.join(dataDir, 'response-original.json');
 const alteredDataPath = path.join(dataDir, 'response-altered.json');
 
