@@ -1,198 +1,73 @@
-# BSV Data Integrity Demo
+# Data Integrity Demo
 
-This demo application demonstrates how BSV blockchain can be used to verify data integrity and detect unauthorized changes to database records.
+An interactive demonstration of comparing procurement award records with data recorded in BSV transaction outputs. A React frontend loads original and altered JSON fixtures from an Express backend, creates proof transactions through a BRC-100 wallet and displays a comparison.
 
-## Overview
+The backend serves local fixtures. It does not connect to a procurement database or modify a live data source.
 
-The application consists of:
-- **Frontend**: React + Vite + TypeScript with shadcn/ui components
-- **Backend**: Node.js + Express + TypeScript API server
-- **BSV Integration**: Uses @bsv/sdk WalletClient for creating and verifying integrity proofs
+## What is included
 
-## Features
+- Original and altered example award records.
+- An interface for switching between the two fixture sets.
+- Wallet actions that place complete JSON records in `OP_FALSE OP_RETURN` outputs.
+- A comparison view that reads outputs from the wallet's `integrity` basket.
 
-### Two-Tab Comparison
+Creating proofs can incur transaction fees on the connected wallet's network. The full records are written to transaction outputs, so use the supplied demonstration data rather than private records.
 
-1. **Without BSV Blockchain Tab**
-   - Shows data fetched from a compromised database
-   - Records 3 and 5 have been tampered with
-   - No way to detect the unauthorized changes
+## Run locally
 
-2. **With BSV Blockchain Tab**
-   - Shows original data with integrity verification
-   - Creates cryptographic proofs stored on BSV blockchain
-   - Immediately detects any tampering when validating against blockchain proofs
+Use Node.js 22.13 or later in the 22.x release line, and npm. A compatible BRC-100 wallet is required for transaction operations; fixture browsing does not require one.
 
-### Data Integrity Protection
+Start the backend from the repository root:
 
-- **Record 3**: Award amount has been changed from $4.2B to $9.9B
-- **Record 5**: Recipient name changed from "NATIONAL AEROSPACE SOLUTIONS, LLC" to "COMPROMISED AEROSPACE SOLUTIONS, LLC"
-
-The BSV blockchain integration detects both modifications instantly using OP_RETURN data anchoring and transaction verification.
-
-## Setup Instructions
-
-### Option 1: Docker (Recommended)
-
-The easiest way to run the demo is using Docker from the root directory:
-
-```bash
-# From the root demo-day directory
-docker-compose up
-```
-
-The application will be available at:
-- Frontend: http://localhost
-- Backend API: http://localhost:3001
-
-To stop:
-```bash
-docker-compose down
-```
-
-### Option 2: Manual Setup
-
-#### Prerequisites
-
-- Node.js (v18 or higher)
-- npm or yarn
-
-#### Installation
-
-1. **Install Backend Dependencies**
-
-```bash
+```sh
 cd backend
-npm install
-```
-
-2. **Install Frontend Dependencies**
-
-```bash
-cd frontend
-npm install
-```
-
-#### Running the Application
-
-You'll need two terminal windows:
-
-**Terminal 1 - Backend Server**
-
-```bash
-cd backend
+npm ci
 npm run dev
 ```
 
-The backend API will start on `http://localhost:3001`
+The API listens on `http://localhost:3001` and serves these routes:
 
-**Terminal 2 - Frontend Application**
+| Route | Data |
+| --- | --- |
+| `/api/data/original` | Original fixture. |
+| `/api/data/altered` | Altered fixture. |
+| `/api/data/records` | First five original records for proof creation. |
 
-```bash
+`PORT` changes the listening port. `DATA_DIR` can override the fixture directory; otherwise the server reads `backend/src/data/`.
+
+In another terminal, from the repository root:
+
+```sh
 cd frontend
-npm run dev
+npm ci
+npm run dev -- --host 127.0.0.1
 ```
 
-The frontend will start on `http://localhost:5173` (or the next available port)
+Open `http://localhost:5173`. The checked-in development configuration selects `http://localhost:3001/api`. To change it, set `VITE_API_URL` in `frontend/.env.local`, including the `/api` suffix.
 
-## Usage Guide
+## Current verification limits
 
-1. **Open the application** in your browser (typically `http://localhost:5173`)
+Proof creation and comparison currently select different records. The API returns five records for proof creation, while the interface compares the first two returned wallet outputs against altered records three and five. It also relies on wallet output order to identify the intended records.
 
-2. **Without BSV Tab**:
-   - View the compromised data
-   - Notice records 3 and 5 are highlighted as modified
-   - No verification is possible - you just have to trust the database
+The code awaits `Transaction.verify()` without checking its boolean result. A non-throwing verification failure does not stop comparison. The current result is therefore a demonstration output, not a reliable integrity verdict.
 
-3. **With BSV Tab**:
-   - Click "Create Integrity Proofs" to store cryptographic hashes of records 3 and 5 on the BSV blockchain
-   - Click "Validate Data Integrity" to check current database records against blockchain proofs
-   - See clear visual indicators showing which records have been tampered with
+Resetting the interface clears local view state and reloads the fixtures. It does not remove wallet outputs or reverse blockchain transactions.
 
-## Technical Implementation
+## Build and hosting
 
-### WalletClient Integration
+In `backend/`, run `npm run build`, then `npm start`. Retain the fixture files or supply `DATA_DIR` when packaging the compiled server.
 
-The application uses BSV SDK's `WalletClient` for blockchain operations:
+For a frontend build against the local API, run from `frontend/`:
 
-```typescript
-// Initialize wallet
-const walletClient = new WalletClient();
-
-// Create integrity proof
-await wallet.createAction({
-  outputs: [{
-    lockingScript: LockingScript.fromASM(`OP_FALSE OP_RETURN ${dataHex}`),
-    satoshis: 0,
-    basket: 'integrity'
-  }]
-});
-
-// Validate integrity
-const outputs = await wallet.listOutputs({ basket: 'integrity' });
-const tx = Transaction.fromBEEF(output.beef);
-await tx.verify();
+```sh
+VITE_API_URL=http://localhost:3001/api npm run build
+npm run preview -- --host 127.0.0.1
 ```
 
-### Data Flow
+Without that override, `.env.production` selects the hosted API. The frontend's Nginx configuration includes an `/api/` proxy for container hosting. See the [frontend README](frontend/README.md) for configuration details and source links.
 
-1. Original data stored in `src/data/response-original.json`
-2. Altered data in `src/data/response-altered.json`
-3. Backend serves both datasets via REST API
-4. Frontend creates blockchain proofs of original records
-5. Validation compares current data against blockchain proofs
+No automated test scripts are defined.
 
-## Project Structure
+## Licence status
 
-```
-data-integrity/
-├── backend/
-│   ├── src/
-│   │   └── server.ts          # Express API server
-│   ├── package.json
-│   └── tsconfig.json
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── ui/            # shadcn/ui components
-│   │   │   └── DataIntegrityDemo.tsx  # Main demo component
-│   │   ├── context/
-│   │   │   └── WalletContext.tsx      # BSV wallet context
-│   │   ├── types/
-│   │   │   └── index.ts       # TypeScript interfaces
-│   │   └── App.tsx            # Root component
-│   ├── package.json
-│   └── tsconfig.json
-└── src/
-    └── data/
-        ├── response.json           # Source data
-        ├── response-original.json  # Clean copy
-        └── response-altered.json   # Tampered data
-```
-
-## Key Technologies
-
-- **React 18** - UI framework
-- **Vite** - Build tool and dev server
-- **TypeScript** - Type safety
-- **shadcn/ui** - UI component library
-- **Tailwind CSS** - Styling
-- **@bsv/sdk** - BSV blockchain integration
-- **Express** - Backend API server
-
-## Demo Scenarios
-
-### Scenario 1: Undetected Tampering
-- Switch to "Without BSV Blockchain" tab
-- See modified records displayed as if they were legitimate
-- No way to verify authenticity
-
-### Scenario 2: Blockchain-Verified Integrity
-- Switch to "With BSV Blockchain" tab
-- Create integrity proofs (stores cryptographic hashes on blockchain)
-- Validate data - system detects both tampered records immediately
-- Visual alerts show exactly what was modified
-
-## License
-
-MIT
+The existing project documentation identifies MIT, while the backend package manifest declares ISC. No licence file is included. These declarations need to be reconciled by the maintainers; this README does not select new licence terms.
