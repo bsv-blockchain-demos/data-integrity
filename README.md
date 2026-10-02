@@ -68,6 +68,6 @@ Without that override, `.env.production` selects the hosted API. The frontend's 
 
 No automated test scripts are defined.
 
-## Licence status
+## Licence
 
-The existing project documentation identifies MIT, while the backend package manifest declares ISC. No licence file is included. These declarations need to be reconciled by the maintainers; this README does not select new licence terms.
+**Licence declarations: MIT and ISC.** The project documentation identifies MIT, while [backend/package.json](backend/package.json) declares ISC. The [frontend package](frontend/package.json) has no licence declaration. These declarations differ. No standalone licence file is included in this repository.

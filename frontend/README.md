@@ -64,3 +64,7 @@ The build type-checks the application and writes `dist/`. Without the override, 
 - [WalletContext.tsx](src/context/WalletContext.tsx): wallet client setup.
 - [Backend routes](../backend/src/server.ts): original, altered and proof-record endpoints.
 - [nginx.conf](nginx.conf): static hosting and an `/api/` proxy for container deployment.
+
+## Licence
+
+This frontend's [package.json](package.json) has no licence declaration. The project documentation identifies **MIT**, while the backend package declares **ISC**. See the [repository licence section](../README.md#licence) for these differing declarations. No standalone licence file is included in this repository.
